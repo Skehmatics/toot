@@ -35,31 +35,37 @@ def wc_wrap(text, length):
     Wrap text to given length, breaking on whitespace and taking into account
     character width.
 
-    Meant for use on a single line or paragraph. Will destroy spacing between
-    words and paragraphs and any indentation.
+    Tries to preserve whitespace where possible. Trailing white space that would
+    create a line break is removed in favor of preserving white space at the
+    beginning of a line (ie, indents).
     """
     line_words = []
     line_len = 0
 
-    words = re.split(r"\s+", text.strip())
+    words = [x for x in re.split(r"((?:[ \t]+)?.*?(?:[ \t]+|$))", text) if x != '']
     for word in words:
         word_len = wcswidth(word)
+        striped_line = "".join(line_words).rstrip()
 
-        if line_words and line_len + word_len > length:
-            line = " ".join(line_words)
-            if line_len <= length:
-                yield line
+        # Account for the fact that this line will hard wrap at least once,
+        # and as such the next word may have a bit more space before it would
+        # need to make another wrap.
+        if wcswidth(striped_line) > length:
+            line_len = line_len % length
+
+        if line_words and line_len + word_len > length and line_len + wcswidth(word.rstrip()) > length:
+            if wcswidth(striped_line) <= length:
+                yield striped_line
             else:
-                yield from _wc_hard_wrap(line, length)
+                yield from _wc_hard_wrap(striped_line, length)
 
             line_words = []
-            line_len = 0
 
+        line_len = wcswidth("".join(line_words)) + word_len
         line_words.append(word)
-        line_len += word_len + 1  # add 1 to account for space between words
 
     if line_words:
-        line = " ".join(line_words)
+        line = "".join(line_words)
         if line_len <= length:
             yield line
         else:
