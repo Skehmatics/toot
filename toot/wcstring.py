@@ -42,7 +42,7 @@ def wc_wrap(text, length):
     line_words = []
     line_len = 0
 
-    words = [x for x in re.split(r"((?:[ \t]+)?.*?(?:[ \t]+|$))", text) if x != '']
+    words = [x for x in re.split(r"((?:[ \t]+)?.+?(?:[ \t]+|$))", text) if x != '']
     for word in words:
         word_len = wcswidth(word)
         striped_line = "".join(line_words).rstrip()
