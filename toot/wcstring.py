@@ -42,15 +42,18 @@ def wc_wrap(text, length):
     line_words = []
     line_len = 0
 
-    words = [x for x in re.split(r"((?:[ \t]+)?.+?(?:[ \t]+|$))", text) if x != '']
+    words = re.split(r"(.+?(?:[ \t]+|$))", text)
     for word in words:
+        if word == '':
+            continue
+
         word_len = wcswidth(word)
         striped_line = "".join(line_words).rstrip()
 
         # Account for the fact that this line will hard wrap at least once,
         # and as such the next word may have a bit more space before it would
         # need to make another wrap.
-        if wcswidth(striped_line) > length:
+        if wcswidth(striped_line) >= length:
             line_len = line_len % length
 
         if line_words and line_len + word_len > length and line_len + wcswidth(word.rstrip()) > length:
@@ -65,7 +68,7 @@ def wc_wrap(text, length):
         line_words.append(word)
 
     if line_words:
-        line = "".join(line_words)
+        line = "".join(line_words).rstrip()
         if line_len <= length:
             yield line
         else:
