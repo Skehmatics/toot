@@ -53,7 +53,7 @@ def wc_wrap(text, length):
         # Account for the fact that this line will hard wrap at least once,
         # and as such the next word may have a bit more space before it would
         # need to make another wrap.
-        if wcswidth(striped_line) >= length:
+        if wcswidth(striped_line) > length:
             line_len = line_len % length
 
         if line_words and line_len + word_len > length and line_len + wcswidth(word.rstrip()) > length:
